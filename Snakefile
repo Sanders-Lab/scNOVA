@@ -114,7 +114,7 @@ rule generate_CN_for_CNN:
         generate_CN_for_CNN = config["generate_CN_for_CNN"]
     log:
         "log/generate_CN_for_CNN.log"
-    conda: "envs/scNOVA.yaml"
+    conda: "envs/scNOVA/scNOVA_R.yaml"
     shell:
         """
         Rscript {params.generate_CN_for_CNN} {input.subclone} {input.sv_calls_all} {input.Deeptool_result_final} {input.CNN_features_annot} {output.sv_calls_all_print} 
@@ -136,7 +136,7 @@ rule generate_CN_for_chromVAR:
         generate_CN_for_chromVAR = config["generate_CN_for_chromVAR"]
     log:
         "log/generate_CN_for_chromVAR.log"
-    conda: "envs/scNOVA.yaml"
+    conda: "envs/scNOVA/scNOVA_R.yaml"
     shell:
         """
         Rscript {params.generate_CN_for_chromVAR} {input.TSS_matrix} {input.TES_matrix} {input.Genebody_matrix} {input.DHS_matrix_resize} {input.subclone} {input.sv_calls_all} {output.sv_calls_all_print} 
@@ -154,11 +154,11 @@ rule remove_low_quality_reads:
     output:
         bam_pre = "bam/{cell}.sc_pre_mono.bam",
         bam_header = "bam/{cell}.header_test.sam"
+    conda: "envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         """
-        module load SAMtools/1.3.1-foss-2016b
-		samtools view -H {input} > {output.bam_header} 
-		samtools view -F 2304 {input.bam} | awk -f utils/awk_1st.awk | cat {output.bam_header} - | samtools view -Sb - > {output.bam_pre}	
+	samtools view -H {input} > {output.bam_header} 
+	samtools view -F 2304 {input.bam} | awk -f utils/awk_1st.awk | cat {output.bam_header} - | samtools view -Sb - > {output.bam_pre}	
         """
 
 rule sort_bam:
@@ -168,9 +168,9 @@ rule sort_bam:
         "bam/{cell}.sc_pre_mono_sort_for_mark.bam"
     threads:
         2
+    conda: "envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         """
-        module load SAMtools/1.3.1-foss-2016b
         samtools sort -@ {threads} -O BAM -o {output} {input}
         """
 
@@ -179,9 +179,9 @@ rule index_num1:
         "bam/{cell}.sc_pre_mono_sort_for_mark.bam"
     output:
         "bam/{cell}.sc_pre_mono_sort_for_mark.bam.bai"
+    conda: "envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         """
-        module load SAMtools/1.3.1-foss-2016b
         samtools index {input}
         """	
 	
@@ -191,9 +191,9 @@ rule remove_dup:
     output:
         bam_uniq="bam/{cell}.sc_pre_mono_sort_for_mark_uniq.bam",
         bam_metrix="bam/{cell}.sc_pre_mono.metrix_dup.txt"
+    conda: "envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         """
-        module load biobambam2/2.0.76-foss-2016b
         bammarkduplicates markthreads=2 I={input.bam} O={output.bam_uniq} M={output.bam_metrix} index=1 rmdup=1
         """
 
@@ -202,9 +202,9 @@ rule index_num2:
         "bam/{cell}.sc_pre_mono_sort_for_mark_uniq.bam"
     output:
         "bam/{cell}.sc_pre_mono_sort_for_mark_uniq.bam.bai"
+    conda: "envs/scNOVA/scNOVA_bioinfo_tools.yaml"
     shell:
         """
-        module load SAMtools/1.3.1-foss-2016b
         samtools index {input}
         """
 
